@@ -1,0 +1,257 @@
+info:
+  contact:
+    email: 2501701317@qq.com
+  license: {}
+  version: 1.0.0(zimg-go)
+paths:
+  /del:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: 删除指定图片
+      parameters:
+      - description: 图片编号id
+        in: formData
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            type: string
+      summary: 删除指定图片
+  /list/path:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: 按指定路径查询图片列表
+      parameters:
+      - description: 图片路径,可以使用*通配符
+        in: formData
+        name: path
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            type: string
+      summary: 按指定路径查询图片列表
+  /list/remark:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: 按图片备注查询
+      parameters:
+      - description: 图片备注信息,可以使用*通配符
+        in: formData
+        name: remark
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            type: string
+      summary: 按图片备注查询
+  /list/url:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: 按指定图片源地址查询
+      parameters:
+      - description: 图片源地址
+        in: formData
+        name: img
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            type: string
+      summary: 按指定图片源地址查询
+  /list/url/bytime:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: 按起止时间获取源地址清单
+      parameters:
+      - description: 开始日期，格式yyyy-MM-dd，默认为当天
+        in: formData
+        name: beginDate
+        type: string
+      - description: 结束日期，格式yyyy-MM-dd，默认为明天
+        in: formData
+        name: endDate
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            type: string
+      summary: 按起止时间获取源地址清单
+  /pic:
+    get:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: 获取限定文件大小的图片
+      parameters:
+      - description: 图片编号id
+        in: formData
+        name: id
+        required: true
+        type: string
+      - description: 图片大小上限，单位为kb，默认为最大10Mb
+        in: formData
+        name: maxSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            type: string
+      summary: 获取限定文件大小的图片
+  /qua/upload:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: 上传生意宝资质图片
+      parameters:
+      - description: 图片文件数据
+        in: formData
+        name: image
+        required: true
+        type: file
+      - description: 生意宝账号
+        in: formData
+        name: accountId
+        required: true
+        type: string
+      - description: 资质图片类型
+        in: formData
+        name: picType
+        required: true
+        type: string
+      - description: 银行卡号码，若是传银行卡正面照片时必填
+        in: formData
+        name: bankCardNo
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            type: string
+      summary: 上传生意宝资质图片
+  /qua/upload/all:
+    get:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: 全部生意宝资质上传到Zimg服务器
+      parameters:
+      - description: 起始生意宝账户ID
+        in: formData
+        name: start
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            type: string
+      summary: 全部生意宝资质上传到Zimg服务器
+  /qua/upload/from:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: 单个生意宝资质上传到Zimg服务器
+      parameters:
+      - description: 生意宝账户ID
+        in: formData
+        name: accountId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            type: string
+      summary: 单个生意宝资质上传到Zimg服务器
+  /upload:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: 上传图片
+      parameters:
+      - description: 图片文件数据
+        in: formData
+        name: image
+        required: true
+        type: file
+      - description: 图片路径
+        in: formData
+        name: path
+        type: string
+      - description: 图片备注信息
+        in: formData
+        name: remark
+        type: string
+      - description: 本地图片文件名
+        in: formData
+        name: fileName
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            type: string
+      summary: 上传图片
+  /upload/from:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: 转存网络图片到Zimg图床
+      parameters:
+      - description: 网络图片URL
+        in: formData
+        name: imgUrl
+        required: true
+        type: string
+      - description: 文件路径
+        in: formData
+        name: path
+        type: string
+      - description: 图片备注描述
+        in: formData
+        name: remark
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            type: string
+      summary: 转存网络图片到Zimg图床
+swagger: "2.0"
