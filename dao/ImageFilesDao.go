@@ -1,8 +1,8 @@
 package dao
 
 import (
-	"github.com/sadlil/gologger"
 	"ququ.im/common/config"
+	"ququ.im/common/logs"
 	"ququ.im/zimg-go/pojo"
 	"strings"
 	"time"
@@ -10,14 +10,12 @@ import (
 
 const TABLE_IMAGE_FILES string = "image_files"
 
-var logger = gologger.GetLogger()
-
 func SaveImage(imageFiles *pojo.ImageFiles) (*pojo.ImageFiles, error) {
 	imageFiles.UploadTime = time.Now().Format("2006-01-02 15:04:05")
 	tx := config.Mysql.Begin()
 	err := tx.Table(TABLE_IMAGE_FILES).Create(imageFiles).Error
 	if err != nil {
-		logger.Error("插入数据错误:" + err.Error())
+		logs.Error("插入数据错误:{}", err.Error())
 		tx.Rollback()
 		return nil, err
 	}
@@ -29,7 +27,7 @@ func UpdateImageById(id string, updateFields map[string]interface{}) (*pojo.Imag
 	tx := config.Mysql.Begin()
 	err := tx.Table(TABLE_IMAGE_FILES).Where("id = ?", id).Update(updateFields).Error
 	if err != nil {
-		logger.Error("更新数据错误:" + err.Error())
+		logs.Error("更新数据错误:{}", err.Error())
 		tx.Rollback()
 		return nil, err
 	}
@@ -41,7 +39,7 @@ func DeleteImage(id string) error {
 	tx := config.Mysql.Begin()
 	err := tx.Table(TABLE_IMAGE_FILES).Delete(nil, "id = ?", id).Error
 	if err != nil {
-		logger.Error("更新删除错误:" + err.Error())
+		logs.Error("更新删除错误:{}", err.Error())
 		tx.Rollback()
 		return err
 	}

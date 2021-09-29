@@ -7,6 +7,7 @@ import (
 	"github.com/swaggo/gin-swagger"
 	"net/http"
 	"ququ.im/common"
+	"ququ.im/common/aop"
 	"ququ.im/zimg-go/controller"
 	_ "ququ.im/zimg-go/docs"
 )
@@ -16,8 +17,11 @@ func setupRouter() *gin.Engine {
 	// gin.DisableConsoleColor()
 	engine := gin.Default()
 
+	//添加跟踪日志
+	engine.Use(aop.TraceId())
+
 	//设置接口日志
-	//engine.Use(aop.SetRequestLogger())
+	engine.Use(aop.SetRequestLogger())
 
 	//处理全局异常
 	engine.Use(nice.Recovery(recoveryHandler))

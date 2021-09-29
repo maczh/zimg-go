@@ -2,18 +2,16 @@ package controller
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/sadlil/gologger"
 	"os"
 	"path/filepath"
 	"ququ.im/common"
+	"ququ.im/common/logs"
 	"ququ.im/common/utils"
 	"ququ.im/zimg-go/service"
 	"ququ.im/zimg-go/zimg"
 	"strconv"
 	"time"
 )
-
-var logger = gologger.GetLogger()
 
 // SaveImageFromUrl	godoc
 // @Summary		转存网络图片到Zimg图床
@@ -135,7 +133,7 @@ func ListImageByRemark(params map[string]string) common.Result {
 func UploadImage(c *gin.Context) common.Result {
 	imgFile, err := c.FormFile("image")
 	if err != nil {
-		logger.Error("获取上传文件失败:" + err.Error())
+		logs.Error("获取上传文件失败:{}", err.Error())
 		return *common.Error(-1, "获取上传文件失败:"+err.Error())
 	}
 	path := c.PostForm("path")

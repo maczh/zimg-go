@@ -5,17 +5,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/sadlil/gologger"
 	"gopkg.in/mgo.v2/bson"
 	"ququ.im/common"
 	"ququ.im/common/config"
+	"ququ.im/common/logs"
 	"ququ.im/common/pojo"
 	"ququ.im/common/utils"
 	"strings"
 	"time"
 )
-
-var logger = gologger.GetLogger()
 
 type bodyLogWriter struct {
 	gin.ResponseWriter
@@ -89,9 +87,14 @@ func SetRequestLogger() gin.HandlerFunc {
 		postLog.TTL = int(endTime.UnixNano()/1e6 - startTime.UnixNano()/1e6)
 
 		accessLog := "|" + c.Request.Method + "|" + c.Request.RequestURI + "|" + c.ClientIP() + "|" + endTime.Format("2006-01-02 15:04:05.012") + "|" + fmt.Sprintf("%vms", endTime.UnixNano()/1e6-startTime.UnixNano()/1e6)
-		logger.Debug(accessLog)
-		logger.Debug("请求参数:" + utils.ToJSON(c.GetParamMap()))
-		logger.Debug("接口返回:" + utils.ToJSON(result))
+		logs.Debug(accessLog)
+		if result.Status != 1 {
+			logs.Info("请求参数:{}", params)
+			logs.Info("接口返回:{}", result)
+		} else {
+			logs.Debug("请求参数:{}", params)
+			logs.Debug("接口返回:{}", result)
+		}
 		accessChannel <- utils.ToJSON(postLog)
 	}
 }
@@ -102,7 +105,7 @@ func handleAccessChannel() {
 		json.Unmarshal([]byte(accessLog), &postLog)
 		err := config.Mgo.C("ZimgGoRequestLog").Insert(postLog)
 		if err != nil {
-			logger.Error("MongoDB写入错误:" + err.Error())
+			logs.Error("MongoDB写入错误:{}", err.Error())
 		}
 	}
 	return

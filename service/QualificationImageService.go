@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"ququ.im/common"
 	"ququ.im/common/config"
+	"ququ.im/common/logs"
 	"ququ.im/common/utils"
 	"ququ.im/syb/common/nacos"
 	pojo2 "ququ.im/syb/common/pojo"
@@ -308,22 +309,22 @@ func UploadQualificationToZimgAll(startAccountId string) common.Result {
 		config.Mgo.C("QualificationUrls").Find(bson.M{}).Sort("accountId").Skip((page - 1) * size).Limit(size).All(&qualifications)
 		for _, qualification := range qualifications {
 			fmt.Println("========================================================================================================")
-			logger.Debug("正在上传" + qualification.Accountid + "到zimg服务器")
+			logs.Debug("正在上传{}到zimg服务器", qualification.Accountid)
 			if !up && qualification.Accountid != startAccountId {
-				logger.Debug("跳过当前账户")
+				logs.Debug("跳过当前账户")
 				continue
 			}
 			up = true
 			result := UploadQualificationToZimg(qualification.Accountid)
 			if result.Status != 1 {
-				logger.Error(qualification.Accountid + "资质上传错误:" + result.Msg + "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+				logs.Error("{}资质上传错误:{}!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", qualification.Accountid, result.Msg)
 				errorAccountIds = append(errorAccountIds, qualification.Accountid)
 			}
 		}
 	}
-	logger.Debug("全部资质上传到zimg完成！")
+	logs.Debug("全部资质上传到zimg完成！")
 	if len(errorAccountIds) > 0 {
-		logger.Error("发现资质上传失败的账户列表:\n" + utils.ToJSON(errorAccountIds))
+		logs.Error("发现资质上传失败的账户列表:{}", errorAccountIds)
 	}
 	return *common.Success(errorAccountIds)
 }
@@ -345,7 +346,7 @@ func UploadQualificationImage(accountId, picType, bankCardNo, localFileName stri
 	params["bankCardNo"] = bankCardNo
 	r, err := utils.CallNacos(nacos.QUALIFICATION_SERVICE, nacos.SAVE_QUALIFICATION, params)
 	if err != nil {
-		logger.Error("qualification微服务访问异常:" + err.Error())
+		logs.Error("qualification微服务访问异常:{}", err.Error())
 		return *common.Error(-1, "资质微服务访问异常:"+err.Error())
 	}
 	utils.FromJSON(r, &result)

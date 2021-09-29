@@ -4,20 +4,18 @@ import (
 	"errors"
 	"gitee.com/vchuzu/imagedecode"
 	"github.com/levigross/grequests"
-	"github.com/sadlil/gologger"
 	"math"
 	"net/url"
 	"os"
 	"path/filepath"
 	"ququ.im/common"
+	"ququ.im/common/logs"
 	"ququ.im/zimg-go/dao"
 	"ququ.im/zimg-go/pojo"
 	"ququ.im/zimg-go/zimg"
 	"strings"
 	"time"
 )
-
-var logger = gologger.GetLogger()
 
 /**
 从网络图片转存到zimg
@@ -44,43 +42,43 @@ func SaveImageFromUrl(imgUrl, path, remark string) (string, error) {
 	//下载网络图片
 	resp, err := grequests.Get(imgUrl, nil)
 	if err != nil {
-		logger.Error("源文件下载失败:" + err.Error())
+		logs.Error("源文件下载失败:{}", err.Error())
 		return "", err
 	}
 	//if resp.Ok {
 	err = resp.DownloadToFile(fileName)
 	if err != nil {
-		logger.Error("源文件下载失败:" + err.Error())
+		logs.Error("源文件下载失败:{}", err.Error())
 		return "", err
 	}
 	//} else {
-	//	logger.Error("源文件下载失败:" + resp.String())
+	//	logs.Error("源文件下载失败:" + resp.String())
 	//	return "", errors.New("源文件下载失败:" + resp.String())
 	//}
 
 	//上传文件到Zimg
 	fileId, err := zimg.Upload(fileName)
 	if err != nil {
-		logger.Error("文件上传到zimg失败:" + err.Error())
+		logs.Error("文件上传到zimg失败:{}", err.Error())
 		return "", err
 	}
 	//删除本地缓存文件
 	err = os.Remove(fileName)
 	if err != nil {
-		logger.Error("删除本地缓存文件失败:" + err.Error())
+		logs.Error("删除本地缓存文件失败:{}", err.Error())
 		return "", err
 	}
 
 	//重新下载到本地检验，并获取文件大小
 	size, _, err := zimg.Download(fileId, fileName, 0, 0, -1, 0, 0, 0, 0)
 	if err != nil {
-		logger.Error("从zimg下载文件失败:" + err.Error())
+		logs.Error("从zimg下载文件失败:{}", err.Error())
 		return "", err
 	}
 
 	imgType, err := imagedecode.GetImageType(fileName)
 	if err != nil {
-		logger.Error("不是图片类型:" + err.Error())
+		logs.Error("不是图片类型:{}", err.Error())
 		return "", errors.New("不是图片类型:" + err.Error())
 	}
 	ext := ""
@@ -96,7 +94,7 @@ func SaveImageFromUrl(imgUrl, path, remark string) (string, error) {
 	//删除本地缓存文件
 	err = os.Remove(fileName)
 	if err != nil {
-		logger.Error("删除本地缓存文件失败:" + err.Error())
+		logs.Error("删除本地缓存文件失败:{}", err.Error())
 		return "", err
 	}
 
@@ -116,7 +114,7 @@ func SaveImageFromUrl(imgUrl, path, remark string) (string, error) {
 	imageFile.FileName = fileName
 	imageFile, err = dao.SaveImage(imageFile)
 	if err != nil {
-		logger.Error("图片信息入库失败:" + err.Error())
+		logs.Error("图片信息入库失败:{}", err.Error())
 		return "", err
 	}
 	return fileId, nil
@@ -128,7 +126,7 @@ func SaveImageFromUrl(imgUrl, path, remark string) (string, error) {
 func GetPictureResized(fileId string, maxSize int) (string, error) {
 	imageFile := dao.GetImage(fileId)
 	if imageFile == nil {
-		logger.Error(fileId + "图片不存在")
+		logs.Error("{}图片不存在", fileId)
 		return "", errors.New("图片不存在")
 	}
 	if maxSize*1024 >= imageFile.Size {
@@ -148,17 +146,17 @@ func DeleteImage(fileId string) common.Result {
 	}
 	imageFile := dao.GetImage(fileId)
 	if imageFile == nil {
-		logger.Error(fileId + "图片不存在")
+		logs.Error("{}图片不存在", fileId)
 		return *common.Error(-1, "图片不存在")
 	}
 	err := zimg.Delete(fileId)
 	if err != nil {
-		logger.Error("图片删除错误:" + err.Error())
+		logs.Error("图片删除错误:{}", err.Error())
 		return *common.Error(-1, "图片删除错误:"+err.Error())
 	}
 	err = dao.DeleteImage(fileId)
 	if err != nil {
-		logger.Error("图片库删除错误:" + err.Error())
+		logs.Error("图片库删除错误:{}", err.Error())
 		return *common.Error(-1, "图片库删除错误:"+err.Error())
 	}
 	return *common.Success(nil)
@@ -218,26 +216,26 @@ func UploadImageFile(localFileName, path, remark, fileName string) common.Result
 	//上传文件到Zimg
 	fileId, err := zimg.Upload(localFileName)
 	if err != nil {
-		logger.Error("文件上传到zimg失败:" + err.Error())
+		logs.Error("文件上传到zimg失败:{}", err.Error())
 		return *common.Error(-1, "文件上传到zimg失败:"+err.Error())
 	}
 	//删除本地缓存文件
 	err = os.Remove(localFileName)
 	if err != nil {
-		logger.Error("删除本地缓存文件失败:" + err.Error())
+		logs.Error("删除本地缓存文件失败:{}", err.Error())
 		return *common.Error(-1, "删除本地缓存文件失败:"+err.Error())
 	}
 
 	//重新下载到本地检验，并获取文件大小
 	size, _, err := zimg.Download(fileId, localFileName, 0, 0, -1, 0, 0, 0, 0)
 	if err != nil {
-		logger.Error("从zimg下载文件失败:" + err.Error())
+		logs.Error("从zimg下载文件失败:{}", err.Error())
 		return *common.Error(-1, "从zimg下载文件失败:"+err.Error())
 	}
 
 	imgType, err := imagedecode.GetImageType(localFileName)
 	if err != nil {
-		logger.Error("不是图片类型:" + err.Error())
+		logs.Error("不是图片类型:{}", err.Error())
 		return *common.Error(-1, "不是图片类型:"+err.Error())
 	}
 	ext := ""
@@ -253,7 +251,7 @@ func UploadImageFile(localFileName, path, remark, fileName string) common.Result
 	//删除本地缓存文件
 	err = os.Remove(localFileName)
 	if err != nil {
-		logger.Error("删除本地缓存文件失败:" + err.Error())
+		logs.Error("删除本地缓存文件失败:{}", err.Error())
 		return *common.Error(-1, "删除本地缓存文件失败:"+err.Error())
 	}
 	result := make(map[string]string)
@@ -275,7 +273,7 @@ func UploadImageFile(localFileName, path, remark, fileName string) common.Result
 	imageFile.FileName = fileName
 	imageFile, err = dao.SaveImage(imageFile)
 	if err != nil {
-		logger.Error("图片信息入库失败:" + err.Error())
+		logs.Error("图片信息入库失败:{}", err.Error())
 		return *common.Error(-1, "图片信息入库失败:"+err.Error())
 	}
 	result["imgUrl"] = zimg.ZIMG_HOST + fileId

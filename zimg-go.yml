@@ -2,14 +2,14 @@ go:
   application:
     name: zimg-go
     port: 8188
-#    ip: 110.87.159.189
   nacos:
-    server: 172.16.88.125
+    server: xxx.xxx.xxx.xxx
     port: 8848
     clusterName: DEFAULT
     weight: 1
   config:
-    server: http://172.16.88.125:8079/
+    server: http://xxx.xxx.xxx.xxx:8848/
+    server_type: nacos
     env: prod
     type: .yml
     mid: -go-
@@ -21,3 +21,5 @@ go:
       ssdb: ssdb
       rabbitmq: rabbitmq
       nacos: nacos
+  log:
+    req: ZimgGoRequestLog

@@ -7,25 +7,23 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"github.com/go-resty/resty"
 	"github.com/levigross/grequests"
-	"github.com/sadlil/gologger"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"ququ.im/common/logs"
 	"strconv"
 	"strings"
 )
 
-var logger = gologger.GetLogger()
-
 func Upload(fileName string) (string, error) {
 	file, err := ioutil.ReadFile(fileName)
 	if err != nil {
-		logger.Error("文件打开错误:" + err.Error())
+		logs.Error("文件打开错误:{}", err.Error())
 		return "", err
 	}
 	imgType, err := imagedecode.GetImageType(fileName)
 	if err != nil {
-		logger.Error("不是图片类型:" + err.Error())
+		logs.Error("不是图片类型:{}", err.Error())
 		return "", errors.New("不是图片类型:" + err.Error())
 	}
 	ext := ""
@@ -46,11 +44,11 @@ func Upload(fileName string) (string, error) {
 		SetMultipartField("userfile", fn, imgType, bytes.NewReader(file)).
 		Post(ZIMG_HOST_LAN + API_URL_UPLOAD)
 	if err != nil {
-		logger.Error("文件上传失败:" + err.Error())
+		logs.Error("文件上传失败:{}", err.Error())
 		return "", err
 	}
 	if resp.StatusCode() == 200 {
-		//logger.Debug("上传文件返回结果: " + resp.String())
+		//logs.Debug("上传文件返回结果: " + resp.String())
 		if strings.Contains(resp.String(), "Failed") {
 			return "", errors.New("文件上传失败:" + resp.String())
 		}
@@ -72,7 +70,7 @@ func Download(fileId, fileName string, w, h, p, x, y, g, q int) (int, string, er
 		path, _ := filepath.Abs(filepath.Dir(os.Args[0]))
 		fileName = path + IMAGE_PATH + fileName
 	}
-	logger.Debug("下载文件保存到:" + fileName)
+	logs.Debug("下载文件保存到:{}", fileName)
 	url := ZIMG_HOST + fileId
 	params := make(map[string]string)
 	if w != 0 {
@@ -98,18 +96,18 @@ func Download(fileId, fileName string, w, h, p, x, y, g, q int) (int, string, er
 	}
 	resp, err := grequests.Get(url, &grequests.RequestOptions{Params: params})
 	if err != nil {
-		logger.Error("文件下载失败:" + err.Error())
+		logs.Error("文件下载失败:{}", err.Error())
 		return 0, fileName, err
 	}
 	if resp.Ok {
 		err = resp.DownloadToFile(fileName)
 		if err != nil {
-			logger.Error("文件下载失败:" + err.Error())
+			logs.Error("文件下载失败:{}", err.Error())
 			return 0, fileName, err
 		}
 		return getFileSize(fileName), fileName, nil
 	} else {
-		logger.Error("文件下载失败:" + resp.String())
+		logs.Error("文件下载失败:{}", resp.String())
 		return 0, fileName, errors.New("文件下载失败:" + resp.String())
 	}
 }
@@ -121,7 +119,7 @@ func Delete(fileId string) error {
 	params["t"] = "1"
 	resp, err := grequests.Get(url, &grequests.RequestOptions{Params: params})
 	if err != nil {
-		logger.Error("远程文件删除失败:" + err.Error())
+		logs.Error("远程文件删除失败:{}", err.Error())
 		return err
 	}
 	if resp.Ok {
